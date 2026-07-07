@@ -1,0 +1,7 @@
+tests
+.base-go
+.gitignore
+.travis.yml
+Makefile
+README.md
+release.sh
