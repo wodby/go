@@ -1,6 +1,6 @@
 -include env_make
 
-GO_VER ?= 1.26.6
+GO_VER ?= 1.26.7
 GO_VER_MINOR := $(shell v='$(GO_VER)'; echo "$${v%.*}")
 
 REPO = wodby/go
