@@ -11,8 +11,8 @@ on:
   pull_request:
 
 env:
+  GO127: '1.27.1'
   GO126: '1.26.8'
-  GO125: '1.25.14'
 
 jobs:
   setup:
@@ -24,8 +24,8 @@ jobs:
         run: |
           cat << 'EOF' > versions.json
           [
-            {"key": "go126", "version": "${{ env.GO126 }}", "latest": "latest", "latest_major": "1"},
-            {"key": "go125", "version": "${{ env.GO125 }}", "latest": "", "latest_major": ""}
+            {"key": "go127", "version": "${{ env.GO127 }}", "latest": "latest", "latest_major": "1"},
+            {"key": "go126", "version": "${{ env.GO126 }}", "latest": "", "latest_major": ""}
           ]
           EOF
           echo "go-versions=$(jq -c . versions.json)" >> "$GITHUB_OUTPUT"

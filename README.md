@@ -22,7 +22,7 @@
 
 ## Docker Images
 
-For better reliability we release images with stability tags (`wodby/go:1.26-X.X.X`) which correspond to [git tags](https://github.com/wodby/go/releases). We strongly recommend using images only with stability tags.
+For better reliability we release images with stability tags (`wodby/go:1.27-X.X.X`) which correspond to [git tags](https://github.com/wodby/go/releases). We strongly recommend using images only with stability tags.
 
 About images:
 
@@ -33,12 +33,12 @@ About images:
 
 Supported tags and respective `Dockerfile` links:
 
-- `1.26`, `1`, `latest` [_(Dockerfile)_]
-- `1.25` [_(Dockerfile)_]
-- `1.26-dev`, `1-dev`, `dev` [_(Dockerfile)_]
-- `1.25-dev` [_(Dockerfile)_]
-- `1.26-dev-macos`, `1-dev-macos` [_(Dockerfile)_]
-- `1.25-dev-macos` [_(Dockerfile)_]
+- `1.27`, `1`, `latest` [_(Dockerfile)_]
+- `1.26` [_(Dockerfile)_]
+- `1.27-dev`, `1-dev`, `dev` [_(Dockerfile)_]
+- `1.26-dev` [_(Dockerfile)_]
+- `1.27-dev-macos`, `1-dev-macos` [_(Dockerfile)_]
+- `1.26-dev-macos` [_(Dockerfile)_]
 
 [_(Dockerfile)_]: https://github.com/wodby/go/tree/master/Dockerfile
 
