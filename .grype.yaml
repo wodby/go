@@ -1,9 +1,0 @@
-# The vendor marks Go 1.26.0 through 1.26.5 affected; Go 1.25 is unaffected.
-# https://pkg.go.dev/vuln/GO-2026-5942
-# Limit this exception to the reviewed package version.
-ignore:
-  - vulnerability: CVE-2026-46600
-    package:
-      name: go
-      version: 1.25.14
-      type: binary
