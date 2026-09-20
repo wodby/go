@@ -1,4 +1,4 @@
-ARG GO_IMAGE=wodby/go:1.26-dev
+ARG GO_IMAGE=wodby/go:1.27-dev
 
 FROM $GO_IMAGE
 
