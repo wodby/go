@@ -1,6 +1,10 @@
+# check=skip=InvalidDefaultArgInFrom
+
+# The Makefile supplies the required digest-pinned BASE_IMAGE argument.
 ARG GO_VER=1.27.1
 
-FROM golang:${GO_VER}-alpine
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 ARG GO_DEV
 
