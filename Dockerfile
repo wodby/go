@@ -7,6 +7,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 ARG GO_DEV
+LABEL com.wodby.workspace.contract="${GO_DEV:+1}"
 
 ARG WODBY_USER_ID=1000
 ARG WODBY_GROUP_ID=1000
@@ -152,3 +153,5 @@ COPY bin /usr/local/bin/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["go"]
+
+COPY workspace-profile.sh /etc/profile.d/workspace.sh

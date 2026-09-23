@@ -145,3 +145,30 @@ image. A version without a pin fails before the build starts.
 When adding a supported base version or variant, add its image index digest to
 `base-images.mk`. For a custom build, override `BASE_IMAGE` with a complete
 `repository:tag@sha256:...` reference.
+
+### Development workspace contract
+
+Development variants declare `com.wodby.workspace.contract=1`. Configuration-only
+startup (`/docker-entrypoint.sh --configure-runtime`) does not rewrite developer
+SSH/Git settings, initialize shared storage, or run application hooks. Normal
+startup retains its existing behavior. `WODBY_WORKSPACE=1` selects the workspace
+startup command. Login-shell tools remain available when the developer home is mounted.
+
+`workspace-go prepare` resolves the selected package's dependencies.
+`workspace-go start` recompiles and executes it on every application restart.
+`WORKSPACE_GO_PACKAGE` defaults to `.`; `WORKSPACE_GO_COMMAND` overrides startup.
+`HOST` and `PORT` default to `0.0.0.0` and `8080`, but the application must read them.
+Builds use temporary module metadata and `-mod=readonly`, preserving repository
+`go.mod` and `go.sum`. Fix dependency declarations deliberately before retrying a
+failed preparation. `go.work` projects need custom preparation/start commands.
+There is no automatic watcher. Existing Go build-cache settings are preserved.
+
+Dependencies/build output use `.wodby-workspace/` in the shared checkout, excluded
+through `.git/info/exclude` without editing `.gitignore`. A tracked directory or
+symlink at that reserved path is refused. The runner's private home is not required
+by application pods. Package lifecycle scripts remain application-owned and may
+modify files; review Git changes after preparation.
+
+CI checks labels for all image variants and runs configuration, developer-state,
+reserved-path and runtime tests for development variants. Publish a new image
+revision before enabling this contract in a consuming service.
