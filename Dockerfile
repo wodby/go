@@ -72,6 +72,7 @@ RUN set -xe; \
         yaml; \
     \
     if [[ -n "${GO_DEV}" ]]; then \
+        apk add --no-cache ripgrep jq; \
         apk add --update --no-cache -t .wodby-go-dev-deps \
             build-base \
             gcc \
