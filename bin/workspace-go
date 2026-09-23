@@ -1,0 +1,27 @@
+#!/bin/sh
+# Build against temporary module metadata so automatic checksum updates stay out of Git.
+set -eu
+cd "${APP_ROOT:-/usr/src/app}"
+state=$(workspace-path)
+export HOST="${HOST:-0.0.0.0}" PORT="${PORT:-8080}"
+if [ "${1:-}" = start ] && [ -n "${WORKSPACE_GO_COMMAND:-}" ]; then exec sh -ec "$WORKSPACE_GO_COMMAND"; fi
+[ -f go.mod ] || { echo 'Workspace requires go.mod' >&2; exit 1; }
+[ ! -f go.work ] || { echo 'go.work projects require a custom preparation/start command' >&2; exit 1; }
+metadata=$(mktemp -d)
+trap 'rm -rf "$metadata"' EXIT HUP INT TERM
+cp go.mod "$metadata/go.mod"
+if [ -f go.sum ]; then cp go.sum "$metadata/go.sum"; fi
+export GOWORK=off
+case "${1:-}" in
+ prepare) go list -mod=readonly -modfile="$metadata/go.mod" -deps "${WORKSPACE_GO_PACKAGE:-.}" >/dev/null ;;
+ start)
+  # Recompile on each application restart; no watcher is implied.
+  binary=$(mktemp "$state/app.XXXXXX")
+  go build -mod=readonly -modfile="$metadata/go.mod" -o "$binary" "${WORKSPACE_GO_PACKAGE:-.}"
+  mv "$binary" "$state/app"
+  binary="$state/app"
+  rm -rf "$metadata"
+  trap - EXIT HUP INT TERM
+  exec "$binary" ;;
+ *) echo 'Usage: workspace-go prepare|start' >&2; exit 1 ;;
+esac
