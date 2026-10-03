@@ -3,6 +3,19 @@
 set -eu
 cd "${APP_ROOT:-/usr/src/app}"
 state=$(workspace-path)
+# The image keeps Go's caches in the container's home, which is lost whenever
+# the container restarts, and preparation runs in a container of its own. Keep
+# downloaded modules and compiled packages with the checkout instead, so a
+# restart recompiles only what changed. Caches set to anything else stay as set.
+if [ "${GOMODCACHE:-/home/wodby/go/pkg/mod}" = /home/wodby/go/pkg/mod ]; then
+ export GOMODCACHE="$state/mod"
+ # Module files are read-only by default, which would stop the developer from
+ # deleting them along with the rest of the checkout's untracked files.
+ export GOFLAGS="${GOFLAGS:+$GOFLAGS }-modcacherw"
+fi
+if [ "${GOCACHE:-/home/wodby/.cache/go-build}" = /home/wodby/.cache/go-build ]; then
+ export GOCACHE="$state/cache"
+fi
 export HOST="${HOST:-0.0.0.0}" PORT="${PORT:-8080}"
 if [ "${1:-}" = start ] && [ -n "${WORKSPACE_GO_COMMAND:-}" ]; then exec sh -ec "$WORKSPACE_GO_COMMAND"; fi
 [ -f go.mod ] || { echo 'Workspace requires go.mod' >&2; exit 1; }

@@ -161,12 +161,17 @@ startup command. Login-shell tools remain available when the developer home is m
 Builds use temporary module metadata and `-mod=readonly`, preserving repository
 `go.mod` and `go.sum`. Fix dependency declarations deliberately before retrying a
 failed preparation. `go.work` projects need custom preparation/start commands.
-There is no automatic watcher. Existing Go build-cache settings are preserved.
+There is no automatic watcher.
 
-Dependencies/build output use `.wodby-workspace/` in the shared checkout, excluded
-through `.git/info/exclude` without editing `.gitignore`. A tracked directory or
-symlink at that reserved path is refused. The runner's private home is not required
-by application pods. Package lifecycle scripts remain application-owned and may
+Downloaded modules (`mod`), compiled packages (`cache`) and the built binary use
+`.wodby-workspace/` in the shared checkout, so preparation's downloads reach the
+application and a restart recompiles only what changed. `workspace-go` points
+`GOMODCACHE` and `GOCACHE` there and adds `-modcacherw` to `GOFLAGS`, also for
+`WORKSPACE_GO_COMMAND`; a cache set to anything but the image default stays as set.
+Both caches count against the checkout's volume and can be deleted at any time.
+The directory is excluded through `.git/info/exclude` without editing `.gitignore`.
+A tracked directory or symlink at that reserved path is refused. The runner's
+private home is not required by application pods. Package lifecycle scripts remain application-owned and may
 modify files; review Git changes after preparation.
 
 CI checks labels for all image variants and runs configuration, developer-state,

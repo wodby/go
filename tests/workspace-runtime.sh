@@ -35,6 +35,17 @@ printf 'package main\nimport "fmt"\nfunc main(){fmt.Print("before")}\n' > main.g
 cp go.mod "$fixture/mod.expected"
 workspace-go prepare
 test "$(workspace-go start)" = before
+# Compiled packages are kept with the checkout, not in the container's home,
+# which a restart discards; a custom start command gets the same caches.
+state="$APP_ROOT/.wodby-workspace"
+test -n "$(ls -A "$state/cache")"
+test "$(WORKSPACE_GO_COMMAND='go env GOMODCACHE GOCACHE GOFLAGS' workspace-go start)" = "$state/mod
+$state/cache
+-modcacherw"
+test -z "$(git ls-files --others --exclude-standard -- .wodby-workspace)"
+# Caches set to anything else stay as set.
+test "$(GOMODCACHE="$fixture/mod" GOCACHE="$fixture/cache" WORKSPACE_GO_COMMAND='go env GOMODCACHE GOCACHE GOFLAGS' workspace-go start)" = "$fixture/mod
+$fixture/cache"
 sed -i 's/before/after/' main.go
 test "$(WODBY_WORKSPACE=1 /docker-entrypoint.sh ignored)" = after
 cmp go.mod "$fixture/mod.expected"
