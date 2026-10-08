@@ -78,6 +78,7 @@ test:
 	cd ./tests && IMAGE=$(REPO):$(TAG) bash ./workspace-contract.sh
 ifneq ($(GO_DEV),)
 	cd ./tests && GO_IMAGE=$(REPO):$(TAG) ./run.sh
+	cd ./tests && IMAGE=$(REPO):$(TAG) bash ./workspace-reload.sh
 else
 	@echo "We run tests only for DEV images."
 endif

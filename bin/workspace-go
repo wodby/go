@@ -28,13 +28,80 @@ export GOWORK=off
 case "${1:-}" in
  prepare) go list -mod=readonly -modfile="$metadata/go.mod" -deps "${WORKSPACE_GO_PACKAGE:-.}" >/dev/null ;;
  start)
-  # Recompile on each application restart; no watcher is implied.
-  binary=$(mktemp "$state/app.XXXXXX")
-  go build -mod=readonly -modfile="$metadata/go.mod" -o "$binary" "${WORKSPACE_GO_PACKAGE:-.}"
-  mv "$binary" "$state/app"
+  # Compile the checkout and run it. With watching on, which is the default,
+  # the checkout is compiled again whenever a file in it changes and the
+  # application is restarted with the new build, so a change is served without
+  # restarting the container. A build that fails leaves the running build up.
+  build() {
+   cp go.mod "$metadata/go.mod"
+   if [ -f go.sum ]; then cp go.sum "$metadata/go.sum"; else rm -f "$metadata/go.sum"; fi
+   built=$(mktemp "$state/app.XXXXXX")
+   if go build -mod=readonly -modfile="$metadata/go.mod" -o "$built" "${WORKSPACE_GO_PACKAGE:-.}"; then
+    mv "$built" "$state/app"
+   else
+    rm -f "$built"
+    return 1
+   fi
+  }
+  build
   binary="$state/app"
-  rm -rf "$metadata"
-  trap - EXIT HUP INT TERM
-  exec "$binary" ;;
+  if [ "${WORKSPACE_GO_WATCH:-1}" = 0 ]; then
+   rm -rf "$metadata"
+   trap - EXIT HUP INT TERM
+   exec "$binary"
+  fi
+  # The checkout is a shared volume that other containers write to, where file
+  # events don't arrive, so the files are polled. Anything in the checkout can
+  # be part of the build (embedded files, templates), so everything is watched
+  # but Git's own files, this script's storage and installed Node packages.
+  interval="${WORKSPACE_POLL_INTERVAL:-1000}"
+  case "$interval" in ''|*[!0-9]*) echo 'WORKSPACE_POLL_INTERVAL must be milliseconds' >&2; exit 1 ;; esac
+  [ "$interval" -ge 100 ] && [ "$interval" -le 60000 ] || { echo 'Polling interval must be 100..60000 ms' >&2; exit 1; }
+  pause=$(( (interval + 999) / 1000 ))
+  root=$(pwd -P)
+  fingerprint() {
+   find "$root" \( -path "$root/.git" -o -path "$state" -o -name node_modules \) -prune -o -type f -exec stat -c '%Y %s %n' {} + 2>/dev/null | sort | cksum
+  }
+  child=
+  stop() {
+   [ -n "$child" ] || return 0
+   kill -TERM "$child" 2>/dev/null || true
+   # An application that ignores the signal is killed after ten seconds.
+   n=0
+   while kill -0 "$child" 2>/dev/null && [ "$n" -lt 100 ]; do sleep 0.1; n=$((n + 1)); done
+   kill -KILL "$child" 2>/dev/null || true
+   wait "$child" 2>/dev/null || true
+   child=
+  }
+  trap 'stop; rm -rf "$metadata"; exit 143' HUP INT TERM
+  trap 'rm -rf "$metadata"' EXIT
+  seen=$(fingerprint)
+  "$binary" &
+  child=$!
+  while :; do
+   # Sleep in the background so a signal ends the wait at once.
+   sleep "$pause" &
+   wait $! || true
+   if ! kill -0 "$child" 2>/dev/null; then
+    # The application ended by itself. The container ends with it, as it
+    # would without watching, and its restart policy decides what follows.
+    code=0
+    wait "$child" || code=$?
+    child=
+    exit "$code"
+   fi
+   now=$(fingerprint)
+   [ "$now" != "$seen" ] || continue
+   seen=$now
+   echo 'workspace-go: the checkout changed; compiling' >&2
+   if build; then
+    stop
+    "$binary" &
+    child=$!
+    echo 'workspace-go: restarted with the new build' >&2
+   else
+    echo 'workspace-go: the build failed; the previous build keeps running' >&2
+   fi
+  done ;;
  *) echo 'Usage: workspace-go prepare|start' >&2; exit 1 ;;
 esac

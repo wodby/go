@@ -155,17 +155,21 @@ startup retains its existing behavior. `WODBY_WORKSPACE=1` selects the workspace
 startup command. Login-shell tools remain available when the developer home is mounted.
 
 `workspace-go prepare` resolves the selected package's dependencies.
-`workspace-go start` recompiles and executes it on every application restart.
+`workspace-go start` compiles and runs it, then watches the checkout: when a file changes, it compiles again and
+restarts the application with the new build, without restarting the container. A build that fails leaves the running
+build up and prints the compiler's errors. Files are polled every `WORKSPACE_POLL_INTERVAL` milliseconds (1000 by
+default), because file events don't reach a shared volume. Git's own files, `.wodby-workspace` and `node_modules` are
+not watched. `WORKSPACE_GO_WATCH=0` turns watching off: the application then replaces the script and a change needs
+a restart of the container.
 `WORKSPACE_GO_PACKAGE` defaults to `.`; `WORKSPACE_GO_COMMAND` overrides startup.
 `HOST` and `PORT` default to `0.0.0.0` and `8080`, but the application must read them.
 Builds use temporary module metadata and `-mod=readonly`, preserving repository
 `go.mod` and `go.sum`. Fix dependency declarations deliberately before retrying a
 failed preparation. `go.work` projects need custom preparation/start commands.
-There is no automatic watcher.
 
 Downloaded modules (`mod`), compiled packages (`cache`) and the built binary use
 `.wodby-workspace/` in the shared checkout, so preparation's downloads reach the
-application and a restart recompiles only what changed. `workspace-go` points
+application and a build recompiles only what changed. `workspace-go` points
 `GOMODCACHE` and `GOCACHE` there and adds `-modcacherw` to `GOFLAGS`, also for
 `WORKSPACE_GO_COMMAND`; a cache set to anything but the image default stays as set.
 Both caches count against the checkout's volume and can be deleted at any time.
