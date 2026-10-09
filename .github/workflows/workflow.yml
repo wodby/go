@@ -12,7 +12,7 @@ on:
   pull_request:
 
 env:
-  GO127: '1.27.1'
+  GO127: '1.27.2'
   GO126: '1.26.8'
 
 jobs:
