@@ -18,13 +18,8 @@ endif
 
 ifeq ($(TAG),)
 	ifneq ($(GO_DEV),)
-		ifeq ($(WODBY_USER_ID),501)
-			TAG := $(GO_VER_MINOR)-dev-macos
-			NAME := $(NAME)-dev-macos
-		else
-			TAG := $(GO_VER_MINOR)-dev
-			NAME := $(NAME)-dev
-		endif
+		TAG := $(GO_VER_MINOR)-dev
+		NAME := $(NAME)-dev
 	else
 		TAG := $(GO_VER_MINOR)
 	endif
