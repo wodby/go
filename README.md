@@ -8,7 +8,6 @@
 
 - [Docker Images](#docker-images)
     - [`-dev`](#-dev)
-    - [`-dev-macos`](#-dev-macos)
     - [Supported architectures](#supported-architectures)
 - [Environment Variables](#environment-variables)
 - [Build arguments](#build-arguments)
@@ -43,8 +42,6 @@ Supported tags and respective `Dockerfile` links:
 - `1.26` [_(Dockerfile)_]
 - `1.27-dev`, `1-dev`, `dev` [_(Dockerfile)_]
 - `1.26-dev` [_(Dockerfile)_]
-- `1.27-dev-macos`, `1-dev-macos` [_(Dockerfile)_]
-- `1.26-dev-macos` [_(Dockerfile)_]
 
 [_(Dockerfile)_]: https://github.com/wodby/go/tree/master/Dockerfile
 
@@ -52,13 +49,9 @@ Supported tags and respective `Dockerfile` links:
 
 Images with `-dev` tag have `sudo` allowed for all commands for the `wodby` user and include build dependencies for cgo-based projects.
 
-### `-dev-macos`
-
-Same as `-dev` but the default user/group `wodby` has uid/gid `501`/`20` to match the macOS default user/group ids.
-
 ### Supported architectures
 
-All images are built for `linux/amd64`, `-dev-macos` images are additionally built for `linux/arm64`.
+All images are built for `linux/amd64` and `linux/arm64`.
 
 ## Environment Variables
 
