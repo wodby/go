@@ -3,8 +3,8 @@
 BASE_IMAGE_REPOSITORY := golang
 BASE_IMAGE_VERSION_SUFFIX := -alpine
 
-BASE_IMAGE_DIGEST_1.26.11-alpine := sha256:ae52b5bc6ed045a9ed26ab03dc19327a802a9cc9aa8b27ed57f5c6b60579b0bb
-BASE_IMAGE_DIGEST_1.27.4-alpine := sha256:0a5f7fe796599ff487605987432e7619ae45beeb2fba4c2ce0b907879932aebf
+BASE_IMAGE_DIGEST_1.26.11-alpine := sha256:ecb67f987aa1a57794c91d19ade7ae0209f2f0f5496aaef9e6ae85ddf92d02ab
+BASE_IMAGE_DIGEST_1.27.4-alpine := sha256:70bd7ddea8b6cbe5d6943cde279d6b67feb10cc924fb9100d1d8757c1575b280
 
 # Fail before building when a version or variant has no reviewed pin.
 BASE_IMAGE = $(BASE_IMAGE_REPOSITORY):$(BASE_IMAGE_TAG)@$(or $(BASE_IMAGE_DIGEST_$(BASE_IMAGE_TAG)),$(error No base image digest for $(BASE_IMAGE_REPOSITORY):$(BASE_IMAGE_TAG); update base-images.mk))
